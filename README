@@ -1,0 +1,6 @@
+to install
+- ./install
+dependencies should all be on hackage (so grabbed for you)
+
+to get help
+- haskell@lists.facebook.com

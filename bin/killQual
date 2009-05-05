@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+# ~ killQual MyLol someFile.hs
+# will convert from:
+#   import qualified Lol as MyLol
+#   MyLol.yay
+# to:
+#   import Lol
+#   yay
+
+Q="$1"
+F="$2"
+inPl "$F" sed 's/qualified \([^ ]*\) \bas '"$Q"'\b/\1/;s/'"$Q"'\.//g'

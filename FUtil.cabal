@@ -1,0 +1,23 @@
+name:            FUtil
+version:         0.1
+synopsis:        generic utility library and scripts useful for many projects
+license:         GPL
+license-file:    LICENSE
+author:          dan corson <danl@alum.mit.edu>
+build-depends:   HSH, MonadRandom, array, base, bytestring, containers,
+                 haskell98, mtl, parsec >= 3.0.0, process, random, time
+exposed-modules: FUtil
+hs-source-dirs:  src
+build-type:      Simple
+
+executable:     align
+main-is:        align.hs
+hs-source-dirs: src
+
+executable:     sorth
+main-is:        sorth.hs
+hs-source-dirs: src
+
+executable:     wordSwap
+main-is:        wordSwap.hs
+hs-source-dirs: src
