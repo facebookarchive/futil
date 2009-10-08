@@ -4,8 +4,8 @@ synopsis:        generic utility library and scripts useful for many projects
 license:         GPL
 license-file:    LICENSE
 author:          futil@lists.facebook.com
-build-depends:   HSH, MonadRandom, array, base, bytestring, containers,
-                 haskell98, mtl, parsec >= 3.0.0, process, random, time
+build-depends:   HSH >= 2, MonadRandom, array, base, bytestring, containers,
+                 haskell98, monads-fd, parsec >= 3, process, random, time
 exposed-modules: FUtil
 hs-source-dirs:  src
 build-type:      Simple
