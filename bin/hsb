@@ -90,7 +90,13 @@ else:
     if os.path.exists('name'):
         name = file('name').readlines()[0][:-1]
     else:
-        name = 'Main'
+        cabal_suffix = '.cabal'
+        cabal_files = \
+            [f for f in os.listdir(os.curdir) if f.endswith(cabal_suffix)]
+        if len(cabal_files) == 1:
+            name = cabal_files[0][:-len(cabal_suffix)]
+        else:
+            name = 'Main'
     if opts.test:
         if 'install' in steps:
             cu.error_out('installing test not supported')
@@ -99,8 +105,8 @@ else:
     if 'build' in steps:
         if not os.path.exists('obj'):
             os.mkdir('obj')
-        cmd = ['ghc', '--make', '-odir', 'obj', '-hidir', 'obj',
-            'src/' + name + '.hs', '-o', name]
+        cmd = ['ghc', '-threaded', '--make', '-odir', 'obj', '-hidir', 'obj',
+            'src/Main.hs', '-o', name]
         if opts.optimize:
             cmd += ['-O']
         if opts.optimize2:
@@ -110,6 +116,8 @@ else:
             # if we aren't running
             cmd += args
         cu.cmd_wait(cmd)
+    if 'install' in steps:
+        cu.cmd_wait(['sudo', 'cp', name, '/usr/local/bin'])
 
 if 'run' in steps:
     if opts.cabal:

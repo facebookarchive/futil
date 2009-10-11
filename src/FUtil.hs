@@ -334,9 +334,9 @@ pam x = map ($ x)
 interactL :: ([String] -> [String]) -> IO ()
 interactL f = interact (unlines . f . lines)
 
-onRight :: (b -> c) -> Either a b -> Either a c
-onRight f (Left a) = Left a
-onRight f (Right b) = Right (f b)
+onLeft :: (a -> c) -> Either a b -> Either c b
+onLeft f (Left a) = Left $ f a
+onLeft f (Right b) = Right b
 
 interactOrErr :: Show err => (String -> Either err String) -> IO ()
 interactOrErr f = do
