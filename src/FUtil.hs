@@ -346,7 +346,7 @@ interactOrErr f = do
     Right out -> putStr out
 
 interactLOrErr :: Show err => ([String] -> Either err [String]) -> IO ()
-interactLOrErr f = interactOrErr (onRight unlines . f . lines)
+interactLOrErr f = interactOrErr (fmap unlines . f . lines)
 
 --
 -- parsing
