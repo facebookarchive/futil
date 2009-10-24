@@ -20,7 +20,6 @@ import System.Exit
 import System.IO
 import System.Process
 import System.Random
-import Text.Parsec hiding (satisfy, oneOf, noneOf, anyToken, uncons)
 import qualified Data.ByteString as BS
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -349,51 +348,6 @@ interactLOrErr :: Show err => ([String] -> Either err [String]) -> IO ()
 interactLOrErr f = interactOrErr (fmap unlines . f . lines)
 
 --
--- parsing
---
-
-type StreamParser tok st = Parsec [tok] st [tok]
-
-class (Eq tok, Show tok) => ParsePos tok where
-  trackTok :: tok -> SourcePos -> SourcePos
-
-  satisfy :: (tok -> Bool) -> Parsec [tok] st tok
-  satisfy f = tokenPrim show (\ pos tok _toks -> trackTok tok pos) $ \ tok ->
-    if f tok then Just tok else Nothing
-
-  anyToken :: Parsec [tok] st tok
-  anyToken = satisfy (const True)
-
-  oneOf, noneOf :: [tok] -> Parsec [tok] st tok
-  oneOf cs = satisfy (flip elem cs)
-  noneOf cs = satisfy (not . flip elem cs)
-
-  -- balance '(' ')' e.g. will parse "(()(()))" but not "())".
-  -- note it does not return outermost parens (l and r) (should it?).
-  balance, balanceEnd :: tok -> tok -> StreamParser tok st
-  balance l r = satisfy (== l) >> balanceEnd l r
-  balanceEnd l r = do
-    t <- anyToken
-    if t == r then return [] else if t == l
-      -- can we join?
-      then liftM2 (\ ts ts' -> l:ts ++ r:ts') (balanceEnd l r) (balanceEnd l r)
-      else (t:) <$> balanceEnd l r
-
-  -- apply parser "wherever it works", passing rest of stream through unchanged
-  whereItWorks :: StreamParser tok st -> StreamParser tok st
-  whereItWorks p = (eof >> return []) <|>
-    liftM2 (++) (try p) (whereItWorks p) <|>
-    liftM2 (:) anyToken (whereItWorks p)
-
-  -- apply parser "wherever it works", discarding the rest of the stream
-  onlyWhereItWorks :: Parsec [tok] st [a] -> Parsec [tok] st [a]
-  onlyWhereItWorks p = (eof >> return []) <|>
-    liftM2 (++) (try p) (onlyWhereItWorks p) <|>
-    (anyToken >> onlyWhereItWorks p)
-
-instance Error ParseError
-
---
 -- display helpers
 --
 
@@ -422,35 +376,35 @@ spaceBlocks bs = let
 
 -- how is this not done for me by ghc
 -- Convert Unicode characters to UTF-8.
-toUtf :: String -> String
-toUtf [] = []
-toUtf (x:xs)
-  | ord x <= 0x007F = x:toUtf xs
+toUtf8 :: String -> String
+toUtf8 [] = []
+toUtf8 (x:xs)
+  | ord x <= 0x007F = x:toUtf8 xs
   | ord x <= 0x07FF =
     chr (0xC0 .|. ((ord x `shift` (-6)) .&. 0x1F)):
     chr (0x80 .|. (ord x .&. 0x3F)):
-    toUtf xs
+    toUtf8 xs
   | otherwise =
     chr (0xE0 .|. ((ord x `shift` (-12)) .&. 0x0F)):
     chr (0x80 .|. ((ord x `shift` (-6)) .&.  0x3F)):
     chr (0x80 .|. (ord x .&. 0x3F)):
-    toUtf xs
+    toUtf8 xs
 
-fromUtf :: String -> String
-fromUtf [] = []
-fromUtf (all@(x:xs)) | ord x<=0x7F = x:fromUtf xs
-                     | ord x<=0xBF = err
-                     | ord x<=0xDF = twoBytes all
-                     | ord x<=0xEF = threeBytes all
-                     | otherwise   = err
+fromUtf8 :: String -> String
+fromUtf8 [] = []
+fromUtf8 (all@(x:xs)) | ord x<=0x7F = x:fromUtf8 xs
+                      | ord x<=0xBF = err
+                      | ord x<=0xDF = twoBytes all
+                      | ord x<=0xEF = threeBytes all
+                      | otherwise   = err
   where
     twoBytes (x1:x2:xs) = chr (((ord x1 .&. 0x1F) `shift` 6) .|.
-                               (ord x2 .&. 0x3F)):fromUtf xs
+                               (ord x2 .&. 0x3F)):fromUtf8 xs
     twoBytes _ = error "fromUTF: illegal two byte sequence"
 
     threeBytes (x1:x2:x3:xs) = chr (((ord x1 .&. 0x0F) `shift` 12) .|.
                                     ((ord x2 .&. 0x3F) `shift` 6) .|.
-                                    (ord x3 .&. 0x3F)):fromUtf xs
+                                    (ord x3 .&. 0x3F)):fromUtf8 xs
     threeBytes _ = error "fromUTF: illegal three byte sequence"
 
     err = error "fromUTF: illegal UTF-8 character"
