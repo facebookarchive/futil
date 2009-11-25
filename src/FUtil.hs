@@ -526,6 +526,12 @@ seqTupL ((x, y), z) = ((x, z), (y, z))
 seqTupR :: (t, (t1, t2)) -> ((t, t1), (t, t2))
 seqTupR (x, (y, z)) = ((x, y), (x, z))
 
+rePairRight :: ((a, b), c) -> (a, (b, c))
+rePairRight ((a, b), c) = (a, (b, c))
+
+rePairLeft :: (a, (b, c)) -> ((a, b), c)
+rePairLeft (a, (b, c)) = ((a, b), c)
+
 --
 -- Map
 --
