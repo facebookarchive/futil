@@ -297,26 +297,6 @@ readFileStrict f = do
   length c `seq` return c
 
 --
--- boilerplate
---
-
-isLeft :: Either a b -> Bool
-isLeft (Left _) = True
-isLeft _ = False
-
-isRight :: Either a b -> Bool
-isRight (Right _) = True
-isRight _ = False
-
-fromRight :: Either a b -> b
-fromRight (Right x) = x
-fromRight _ = error "FUtil.fromRight: was Left.."
-
-fromLeft :: Either a b -> a
-fromLeft (Left x) = x
-fromLeft _ = error "FUtil.fromLeft: was Right.."
-
---
 -- backwards variants
 --
 
