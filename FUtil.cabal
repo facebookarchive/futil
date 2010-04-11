@@ -1,7 +1,7 @@
 name:            FUtil
 version:         0.1
 synopsis:        generic utility library and scripts useful for many projects
-license:         GPL
+license:         BSD3
 license-file:    LICENSE
 author:          futil@lists.facebook.com
 build-type:      Simple
