@@ -1,4 +1,3 @@
 #!/bin/sh
 set -e
 cabal install --enable-optimization=2 --global --root-cmd=sudo
-sudo cp bin/* /usr/local/bin

@@ -1,8 +1,0 @@
-#!/bin/sh
-# generate haskell ctags
-find . -path ./_darcs -prune -o -name '*.*hs' -print | xargs hasktags -c &&
-# hasktags does not sort the tags
-# also, sort (for all its options) cannot seem to be made to sort them
-#   correctly!  (i.e. simple ascii sort..)
-# but sorth does (simple ascii sort written in haskell)
-inPl tags sorth >/dev/null

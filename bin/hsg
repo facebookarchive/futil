@@ -1,3 +1,0 @@
-#!/bin/sh
-# grep thru haskell code
-find . -path ./_darcs -prune -o -name '*.*hs' -print | xargs grep -nH "$@"
