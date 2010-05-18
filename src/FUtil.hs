@@ -29,16 +29,13 @@ import qualified HSH
 -- random
 --
 
-gens :: (RandomGen t) => t -> [t]
-gens g = let (g1, g2) = split g in g1:gens g2
-
-shuffle :: (RandomGen g) => [b] -> Rand g [b]
+shuffle :: (MonadRandom m) => [b] -> m [b]
 shuffle l = do
   rndInts <- getRandoms
   return . map snd . sortBy (compare `on` fst) $ zip (rndInts :: [Int]) l
 
-choice :: (RandomGen g) => [b] -> Rand g b
-choice l = fmap head $ shuffle l
+choice :: (MonadRandom m) => [b] -> m b
+choice l = return head `ap` shuffle l
 
 --
 -- lists
