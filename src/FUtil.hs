@@ -41,12 +41,16 @@ choice l = return head `ap` shuffle l
 -- lists
 --
 
-interlines :: [[Char]] -> [Char]
+interlines, interwords, intertabs :: [[Char]] -> [Char]
 interlines = intercalate "\n"
-interwords :: [[Char]] -> [Char]
 interwords = intercalate " "
-intertabs :: [[Char]] -> [Char]
 intertabs = intercalate "\t"
+
+interleave :: [[a]] -> [a]
+interleave = concat . transpose
+
+adjPairs :: [a] -> [(a, a)]
+adjPairs = zip <*> tail
 
 padl :: a -> Int -> [a] -> [a]
 padl c l s = replicate (l - length s) c ++ s
@@ -418,11 +422,14 @@ dirProd :: [a] -> [b] -> [(a, b)]
 dirProd xs ys = [(x, y) | x <- xs, y <- ys]
 
 --
--- maybe
+-- maybe and bool
 --
 
 readMb :: Read a => String -> Maybe a
 readMb s = fmap fst . listToMaybe $ reads s
+
+bool :: t -> t -> Bool -> t
+bool t e c = if c then t else e
 
 --
 -- errors
