@@ -12,12 +12,12 @@ import Data.List
 import Data.Maybe
 import Data.Time
 import Data.Word
-import Locale
 import System.Cmd
 import System.Console.GetOpt
 import System.Environment
 import System.Exit
 import System.IO
+import System.Locale
 import System.Process
 import System.Random
 import qualified Data.ByteString as BS

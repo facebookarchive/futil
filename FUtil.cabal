@@ -6,7 +6,7 @@ license-file:    LICENSE
 author:          futil@lists.facebook.com
 build-type:      Simple
 build-depends:   HSH >= 2, MonadRandom, array, base >= 4, bytestring,
-                 containers, haskell98, mtl, process, random, time
+                 containers, mtl, old-locale, process, random, time
 
 exposed-modules: FUtil
 hs-source-dirs:  src
