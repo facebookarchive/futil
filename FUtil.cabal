@@ -5,17 +5,18 @@ license:         BSD3
 license-file:    LICENSE
 author:          futil@lists.facebook.com
 build-type:      Simple
-build-depends:   HSH         < 2.1,
-                 MonadRandom < 0.2,
-                 array       < 0.5,
-                 base        < 4.6,
-                 bytestring  < 0.10,
-                 containers  < 0.6,
-                 mtl         < 2.2,
-                 old-locale  < 1.1,
-                 process     < 1.2,
-                 random      < 1.1,
-                 time        < 1.5
+build-depends:
+    array
+  , base
+  , bytestring
+  , containers
+  , HSH
+  , MonadRandom
+  , mtl
+  , old-locale
+  , process
+  , random
+  , time
 
 exposed-modules: FUtil
 hs-source-dirs:  src

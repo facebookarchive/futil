@@ -6,12 +6,19 @@ import Control.Monad
 import Control.Monad.Error
 import Control.Monad.Random
 import Data.Bits
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC
+import qualified Data.ByteString.Lazy as BSL
+import qualified Data.ByteString.Lazy.Char8 as BSLC
 import Data.Char
 import Data.Function
 import Data.List
+import qualified Data.Map as M
 import Data.Maybe
+import qualified Data.Set as S
 import Data.Time
 import Data.Word
+import qualified HSH
 import System.Cmd
 import System.Console.GetOpt
 import System.Environment
@@ -20,22 +27,18 @@ import System.IO
 import System.Locale
 import System.Process
 import System.Random
-import qualified Data.ByteString as BS
-import qualified Data.Map as M
-import qualified Data.Set as S
-import qualified HSH
 
 --
 -- random
 --
 
-shuffle :: (MonadRandom m) => [b] -> m [b]
-shuffle l = do
+randShuffle :: (MonadRandom m) => [b] -> m [b]
+randShuffle l = do
   rndInts <- getRandoms
   return . map snd . sortBy (compare `on` fst) $ zip (rndInts :: [Int]) l
 
-choice :: (MonadRandom m) => [b] -> m b
-choice l = return head `ap` shuffle l
+randChoice :: (MonadRandom m) => [b] -> m b
+randChoice l = randShuffle l >>= return . head
 
 --
 -- lists
@@ -78,6 +81,7 @@ cycSucc x = if x == maxBound then minBound else succ x
 cyc :: [a] -> [a]
 cyc (x:xs) = xs ++ [x]
 -- cycle a list one element back
+
 cycB :: [a] -> [a]
 cycB = reverse . cyc . reverse
 
@@ -100,7 +104,7 @@ lookupWithKey k l = case lookup k l of
 cap :: [a] -> [a] -> [a]
 cap c l = c ++ l ++ c
 
--- note the return is slight different from break
+-- note the return is slightly different from break
 -- (is it wrong that i have always wanted break to give Maybe ([a], [a])
 -- and not include the broken-out part)
 breakMb :: (a -> Bool) -> [a] -> Maybe ([a], [a])
@@ -163,7 +167,7 @@ groupByAdj f (x:xs) = groupByAdjPart f xs [x] where
 -- like unix comm
 comm :: (Ord a) => [a] -> [a] -> (([a], [a]), [a])
 comm xa@(x:xs) ya@(y:ys) = case compare x y of
-  EQ -> second ((x:)) $ comm xs ys
+  EQ -> second (x:) $ comm xs ys
   LT -> first (first (x:)) $ comm xs ya
   GT -> first (second (y:)) $ comm xa ys
 
@@ -318,15 +322,23 @@ onLeft :: (a -> c) -> Either a b -> Either c b
 onLeft f (Left a) = Left $ f a
 onLeft f (Right b) = Right b
 
-interactOrErr :: Show err => (String -> Either err String) -> IO ()
-interactOrErr f = do
-  s <- getContents
-  case f s of
-    Left err -> hPutStr stderr (show err)
-    Right out -> putStr out
+bslToBs :: BSL.ByteString -> BS.ByteString
+bslToBs = BS.concat . BSL.toChunks
 
-interactLOrErr :: Show err => ([String] -> Either err [String]) -> IO ()
-interactLOrErr f = interactOrErr (fmap unlines . f . lines)
+bsInteractLErrIO ::
+    ([BS.ByteString] -> IO [Either BS.ByteString BS.ByteString]) ->
+    IO ()
+bsInteractLErrIO = hBsInteractLErrIO stdin stdout stderr
+
+hBsInteractLErrIO
+    :: Handle
+    -> Handle
+    -> Handle
+    -> ([BS.ByteString] -> IO [Either BS.ByteString BS.ByteString])
+    -> IO ()
+hBsInteractLErrIO hIn hOut hErr f = do
+    ls <- f =<< map bslToBs . BSLC.lines <$> BSL.hGetContents hIn
+    mapM_ (either (BSC.hPutStrLn hErr) (BSC.hPutStrLn hOut)) ls
 
 --
 -- display helpers
